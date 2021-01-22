@@ -18,6 +18,7 @@ const (
 	// https://github.com/containerd/cgroups/pull/12
 	clockTicksPerSecond  = 100
 	nanoSecondsPerSecond = 1e9
+	nanoSecondsPerTick   = nanoSecondsPerSecond / clockTicksPerSecond
 )
 
 // getSystemCPUUsage returns the host system's cpu usage in
@@ -58,8 +59,7 @@ func (s *Collector) getSystemCPUUsage() (uint64, error) {
 				}
 				totalClockTicks += v
 			}
-			return (totalClockTicks * nanoSecondsPerSecond) /
-				clockTicksPerSecond, nil
+			return totalClockTicks * nanoSecondsPerTick, nil
 		}
 	}
 	return 0, fmt.Errorf("invalid stat format. Error trying to parse the '/proc/stat' file")
