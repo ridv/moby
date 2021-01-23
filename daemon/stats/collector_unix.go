@@ -1,4 +1,4 @@
-// +build !windows
+// +build linux
 
 package stats // import "github.com/docker/docker/daemon/stats"
 
@@ -34,6 +34,11 @@ func (s *Collector) getSystemCPUUsage() (uint64, error) {
 	if err != nil {
 		return 0, err
 	}
+
+	return s.cpuNanoSeconds(f)
+}
+
+func (s *Collector) cpuNanoSeconds(f *os.File) (uint64, error) {
 	defer func() {
 		s.bufReader.Reset(nil)
 		f.Close()
@@ -55,13 +60,14 @@ func (s *Collector) getSystemCPUUsage() (uint64, error) {
 			for _, i := range parts[1:8] {
 				v, err := strconv.ParseUint(i, 10, 64)
 				if err != nil {
-					return 0, fmt.Errorf("Unable to convert value %s to int: %s", i, err)
+					return 0, fmt.Errorf("unable to convert value %s to int: %s", i, err)
 				}
 				totalClockTicks += v
 			}
 			return totalClockTicks * nanoSecondsPerTick, nil
 		}
 	}
+
 	return 0, fmt.Errorf("invalid stat format. Error trying to parse the '/proc/stat' file")
 }
 
